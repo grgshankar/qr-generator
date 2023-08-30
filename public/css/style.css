@@ -1,0 +1,18 @@
+* {
+  box-sizing: border-box;
+}
+html,
+body {
+  margin: 0px;
+  padding: 0px;
+}
+
+#qr_send_to_email {
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease-in-out;
+}
+#qr_send_to_email.active {
+  opacity: 1;
+  visibility: visible;
+}

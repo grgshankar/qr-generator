@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QR Generator</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+    <div class="qr_form_wrapper">
+        <div class="qr_img">
+            <img id="qrImage" src="" alt="">
+        </div>
+        <h1>
+            <%-homepage%>
+        </h1>
+        <div class="type_qr">
+            <input id="qrUrl" type="text" placeholder="Your QRCode url...">
+            <button onclick="getUrl()">Generator QR</button>
+        </div>
+        <div id="qr_send_to_email">
+            <input id="qrEmail" type="email" placeholder="Please enter your email">
+            <button onclick="getEmail()">Send Email</button>
+        </div>
+    </div>
+</body>
+<script>
+    var qrBaseData;
+    async function getUrl() {
+        const url = document.getElementById("qrUrl").value;
+
+        await generateQR(url);
+        // console.log(url);
+    }
+    async function generateQR(url) {
+        try {
+            const response = await fetch("api/v1/qr", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ url }),
+            });
+            const result = await response.json();
+            console.log("Success:", result);
+            qrBaseData = result.data;
+            if (result && result.data) {
+                document.getElementById("qrImage").src = result.data;
+                document.getElementById("qr_send_to_email").classList.add("active");
+            }
+        } catch (err) {
+            console.log("Error", err);
+        }
+    }
+
+    async function getEmail() {
+        const to = document.getElementById("qrEmail").value;
+        const qrCode = qrBaseData;
+        await sendEmail({ to, qrCode });
+    }
+    async function sendEmail(payload) {
+        try {
+            const response = await fetch("api/v1/mail", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(payload),
+            });
+            const result = response.json();
+            console.log("Success:", result);
+        } catch (err) {
+            console.log("Error:", err);
+        }
+    }
+</script>
+
+</html>
