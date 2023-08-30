@@ -11,7 +11,11 @@
 
 <body>
     <div class="qr_form_wrapper">
-        <div class="qr_img">
+        <div id="fire_cracker" class="pyro">
+            <div class="before"></div>
+            <div class="after"></div>
+        </div>
+        <div id="qr_img">
             <img id="qrImage" src="" alt="">
         </div>
         <h1>
@@ -19,13 +23,16 @@
         </h1>
         <div class="type_qr">
             <input id="qrUrl" type="text" placeholder="Your QRCode url...">
-            <button onclick="getUrl()">Generator QR</button>
+            <button onclick="getUrl()"><span>Generator QR</span></button>
         </div>
         <div id="qr_send_to_email">
             <input id="qrEmail" type="email" placeholder="Please enter your email">
-            <button onclick="getEmail()">Send Email</button>
+            <button onclick="getEmail()"><span>Send Email</span></button>
         </div>
+        <div class="message"><span id="successMsg"></span></div>
     </div>
+
+
 </body>
 <script>
     var qrBaseData;
@@ -49,19 +56,35 @@
             qrBaseData = result.data;
             if (result && result.data) {
                 document.getElementById("qrImage").src = result.data;
+                document.getElementById("qr_img").classList.add("active");
                 document.getElementById("qr_send_to_email").classList.add("active");
+                document.getElementById("fire_cracker").classList.add("active");
             }
         } catch (err) {
             console.log("Error", err);
         }
     }
+    async function isValidGmail(email) {
+        // checking the valid gmail format
+        const emailRegex = /^[a-zA-Z0-9._%+-]+@gmail\.com$/;
 
+        // checking the email matchs the gmail format or not
+        return await emailRegex.test(email);
+
+    }
     async function getEmail() {
         const to = document.getElementById("qrEmail").value;
         const qrCode = qrBaseData;
+
+        if (!isValidGmail(to)) {
+            // displaying and err message for the invalid gmail address
+            document.getElementById("successMsg").textContent = "Please enter the valid email address";
+            return;
+        }
         await sendEmail({ to, qrCode });
     }
     async function sendEmail(payload) {
+        let successEmailMsg;
         try {
             const response = await fetch("api/v1/mail", {
                 method: "POST",
@@ -72,8 +95,10 @@
             });
             const result = response.json();
             console.log("Success:", result);
+            successEmailMsg = "QRCode has been send to your email!!! please you can check it out 🙂";
+            document.getElementById("successMsg").textContent = successEmailMsg;
         } catch (err) {
-            console.log("Error:", err);
+            successEmailMsg = err + " " + "🙁";
         }
     }
 </script>
